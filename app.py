@@ -12,21 +12,61 @@ class TaskManager:
         self.is_filter_active = False
         self.filter_value = 0
 
+        # Style updates
         self.style = ttk.Style()
-        self.style.configure('TButton',
-                             font=('Arial', 10),
-                             width=20,
-                             relief='flat',
-                             background='cyan',
-                             foreground='black')
-        self.style.map('TButton', background=[('active', 'blue')])
-        self.style.configure('TLabel', font=('Arial', 12))
-        self.style.configure('TListbox', font=('Arial', 10))
+        self.style.configure(
+            'TButton',
+            font=('Arial', 10),
+            width=20,
+            relief='flat',
+            background='#00ADB5',  # Accent color
+            foreground='#212121',  # Light text
+        )
+        self.style.map(
+            'TButton',
+            background=[('active', '#007F85')],  # Slightly darker accent
+            foreground=[('active', '#EEEEEE')]
+        )
+        self.style.configure('TLabel', font=('Arial', 12), foreground='#EEEEEE', background='#222831')
+        self.style.configure(
+            'Treeview',
+            font=('Arial', 10),
+            rowheight=25,
+            background='#393E46',  # Slightly lighter background
+            foreground='#EEEEEE',  # Light text
+            fieldbackground='#393E46'
+        )
+        self.style.map('Treeview', background=[('selected', '#00ADB5')], foreground=[('selected', '#222831')])
+        self.style.configure('Treeview.Heading', font=('Arial', 11, 'bold'), background='#00ADB5', foreground='#222831')
 
-        header_label = tk.Label(self.root, text="Windows System Task Manager", font=('Arial', 16, 'bold'), bg='#4CAF50', fg='white', pady=10)
+        # Header label
+        header_label = tk.Label(
+            self.root,
+            text="Windows System Task Manager",
+            font=('Arial', 16, 'bold'),
+            bg='#00ADB5',  # Accent color
+            fg='#222831',  # Dark text
+            pady=10
+        )
         header_label.pack(fill='both')
 
-        self.process_tree = ttk.Treeview(self.root, columns=("PID", "Name", "CPU", "Memory"), show="headings", height=20)
+        # Treeview with Scrollbar
+        tree_frame = tk.Frame(self.root, bg='#222831')  # Dark background
+        tree_frame.pack(padx=10, pady=10, fill='both', expand=True)
+
+        tree_scroll = ttk.Scrollbar(tree_frame, orient="vertical")
+        tree_scroll.pack(side="right", fill="y")
+
+        self.process_tree = ttk.Treeview(
+            tree_frame,
+            columns=("PID", "Name", "CPU", "Memory"),
+            show="headings",
+            height=20,
+            yscrollcommand=tree_scroll.set
+        )
+        tree_scroll.config(command=self.process_tree.yview)
+
+        # Configure Treeview columns
         self.process_tree.heading("PID", text="PID", command=lambda: self.sort_column("PID"))
         self.process_tree.heading("Name", text="Process Name", command=lambda: self.sort_column("Name"))
         self.process_tree.heading("CPU", text="CPU Usage (%)", command=lambda: self.sort_column("CPU"))
@@ -35,10 +75,11 @@ class TaskManager:
         self.process_tree.column("Name", width=200, anchor="w")
         self.process_tree.column("CPU", width=150, anchor="center")
         self.process_tree.column("Memory", width=150, anchor="center")
-        self.process_tree.pack(padx=10, pady=10, fill='both', expand=True)
+        self.process_tree.pack(fill='both', expand=True)
 
-        button_frame = tk.Frame(self.root)
-        button_frame.pack(pady=10)
+        # Buttons and Input Fields
+        button_frame = tk.Frame(self.root, bg="#222831")  # Dark background
+        button_frame.pack(pady=10, fill='x')
 
         self.refresh_button = ttk.Button(button_frame, text="Refresh", command=self.refresh_process_list)
         self.refresh_button.grid(row=0, column=0, padx=10)
@@ -76,7 +117,7 @@ class TaskManager:
         if self.is_filter_active:
             self.apply_filter()
 
-        self.root.after(5000, self.refresh_process_list)
+        self.root.after(10000, self.refresh_process_list)
 
     def kill_process(self):
         selected_item = self.process_tree.selection()
